@@ -80,7 +80,7 @@ static int GetLine(char* buf, unsigned int size)
                     --p;
             }
         }
-        else if (k > 0)
+        else if (k > 0 && k < 0xff) // HACK: according to keybios.h, the range of char
         {
             q = p;
             if (k > 0xff) // extended

@@ -351,36 +351,6 @@ void CPUSpeedFast()     // double
 // END Section
 // ===========================================================================
 
-// are we the Slim edition?
-
-#if 1
-
-#define PORT_E_DR 0xA4000128 
-
-char IsSlim()
-{
-    return !( *(char*)PORT_E_DR & 0x08 ); 
-} 
-
-static int IsEmulator()
-{
-    // at 0x8000FFD0 the calculator's 8 byte fingerprint is stored. 
-    // these bytes are zero on the emulator. 
-    return !( *(int*)0x8000FFD0 ); 
-} 
-
-#else
-
-// old version for OS 1.x
-int IsSlim()
-{
-    char a, b;
-    short c, d;
-
-    OSVersion(&a, &b, &c, &d);
-    return a == 1 && b >= 10;
-}
-#endif
 
 #define NROWS 10
 #define NCOLS 7
@@ -465,87 +435,6 @@ static const unsigned short keyRowColMatrixAlpha[NCOLS*NROWS] =
 };
 
 // ===========================================================================
-// HERE are the key layout matrices for slim model
-// ===========================================================================
-
-// NON-SHIFTED LANDSCAPE LAYOUT
-static const unsigned short keyRowColMatrixSlim[NCOLS*NROWS] =
-{ 
-    // row1
-    KEY_CTRL_AC,0,0,0,0,0,0,
-    // row2
-    0,'-',KEY_CTRL_EXE,'/',')','(',0,
-    // row3
-    0,KEY_CHAR_PMINUS,'+','*',KEY_CTRL_DEL,KEY_CTRL_FD,KEY_CTRL_EXIT,
-    // row4
-    0,KEY_CHAR_EXP,'3','6','9',KEY_CHAR_FRAC,KEY_CTRL_F6,
-    // row5
-    0,KEY_CHAR_DP,'2','5','8',KEY_CHAR_TAN,KEY_CTRL_F5,
-    // row6
-    0,'0','1','4','7',KEY_CHAR_COS,KEY_CTRL_F4,
-    // row7
-    0,0/*light*/,KEY_CTRL_HELP,KEY_CTRL_VARS,KEY_CHAR_STORE,KEY_CHAR_SIN,KEY_CTRL_F3,
-    // row8
-    0, KEY_CTRL_RIGHT,KEY_CTRL_DOWN,KEY_CTRL_OPTN,KEY_CHAR_COMMA,KEY_CHAR_LN,KEY_CTRL_F2,
-        // row9
-    0, KEY_CTRL_UP,KEY_CTRL_LEFT,KEY_CHAR_POW,KEY_CHAR_SQUARE,KEY_CHAR_LOG,KEY_CTRL_F1,
-    // row10
-    0,0,0,KEY_CTRL_ALPHA,KEY_CTRL_SHIFT,'X'/*XTT*/,KEY_CTRL_MENU,
-};
-
-// SHIFTED LANDSCAPE LAYOUT
-static const unsigned short keyRowColMatrixShiftSlim[NCOLS*NROWS] =
-{ 
-    // row1
-    KEY_CTRL_OFF,0,0,0,0,0,0,
-    // row2
-    0,']',KEY_CHAR_CR,'}',KEY_CHAR_RECIP,KEY_CHAR_CUBEROOT,0,
-    // row3
-    0,KEY_CHAR_ANS,'[','{',KEY_CTRL_INS,KEY_CTRL_FD,KEY_CTRL_QUIT,
-    // row4
-    0,KEY_CHAR_PI,'!','r',KEY_CTRL_PASTE,KEY_CTRL_FRACCNVRT,KEY_CTRL_F6,
-    // row5
-    0,'=',KEY_CHAR_MAT,'q',KEY_CTRL_CLIP,KEY_CHAR_ATAN,KEY_CTRL_F5,
-    // row6
-    0,KEY_CHAR_IMGNRY,KEY_CHAR_LIST,KEY_CTRL_CATALOG,KEY_CTRL_CAPTURE,KEY_CHAR_ACOS,KEY_CTRL_F4,
-    // row7
-    0,0/*light*/,KEY_CTRL_HELP,KEY_CTRL_VARS,KEY_CTRL_SHIFT_ARROW,KEY_CHAR_ASIN,KEY_CTRL_F3,
-    // row8
-    0, KEY_CTRL_RIGHT,KEY_CTRL_DOWN,KEY_CTRL_OPTN,'\'',KEY_CHAR_EXPN,KEY_CTRL_F2,
-        // row9
-    0, KEY_CTRL_UP,KEY_CTRL_LEFT,KEY_CHAR_POWROOT,KEY_CHAR_ROOT,KEY_CHAR_EXPN10,KEY_CTRL_F1,
-    // row10
-    0,0,0,KEY_CTRL_ALPHA,KEY_CTRL_SHIFT,KEY_CHAR_ANGLE,KEY_CTRL_MENU,
-};
-
-
-// ALPHA LANDSCAPE LAYOUT
-static const unsigned short keyRowColMatrixAlphaSlim[NCOLS*NROWS] =
-{ 
-    // row1
-    KEY_CTRL_AC,0,0,0,0,0,0,
-    // row2
-    0,'Y',KEY_CHAR_CR,'T','J','I',0,
-    // row3
-    0,KEY_CHAR_ANS,'X','S',KEY_CTRL_DEL,'H',KEY_CTRL_QUIT,
-    // row4
-    0,'"','W','R','O','G',KEY_CTRL_F6,
-    // row5
-    0,' ','V','Q','N','F',KEY_CTRL_F5,
-    // row6
-    0,'Z','U','P','M','E',KEY_CTRL_F4,
-    // row7
-    0,0/*light*/,KEY_CTRL_HELP,KEY_CTRL_VARS,'L','D',KEY_CTRL_F3,
-    // row8
-    0, KEY_CTRL_RIGHT,KEY_CTRL_DOWN,KEY_CTRL_OPTN,'K','C',KEY_CTRL_F2,
-        // row9
-    0, KEY_CTRL_UP,KEY_CTRL_LEFT,KEY_CHAR_THETA,KEY_CHAR_VALR,'B',KEY_CTRL_F1,
-    // row10
-    0,0,0,KEY_CTRL_ALPHA,KEY_CTRL_SHIFT,'A',KEY_CTRL_MENU,
-};
-
-
-// ===========================================================================
 // 
 // ===========================================================================
 
@@ -554,27 +443,9 @@ unsigned int keyMatrix(int row, int col, int shift, int alpha)
     int i = (row-1)*NCOLS + col - 1;
     unsigned short* tab;
 
-    static int slimTested;
-    static int isSlim;
-
-    if (!slimTested)
-    {
-        slimTested = 1;
-        isSlim = IsSlim();
-    }
-
-    if (isSlim)
-    {
-        tab = keyRowColMatrixSlim; // normal
-        if (shift) tab = keyRowColMatrixShiftSlim;
-        if (alpha) tab = keyRowColMatrixAlphaSlim;
-    }
-    else
-    {
-        tab = keyRowColMatrix; // normal
-        if (shift) tab = keyRowColMatrixShift;
-        if (alpha) tab = keyRowColMatrixAlpha;
-    }
+    tab = keyRowColMatrix; // normal
+    if (shift) tab = keyRowColMatrixShift;
+    if (alpha) tab = keyRowColMatrixAlpha;
 
     return tab[i];
 }
